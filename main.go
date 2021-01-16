@@ -22,8 +22,9 @@ File compression:
 		./compress c in_file.txt out_file.cmp ppm
 
 	Supported algos:
-		arithmetic
-		ppm
+		artm
+		mock
+		*ppm
 
 File decompression:
 	
@@ -81,6 +82,9 @@ func main() {
 	args := os.Args[1:]
 
 	switch {
+	case len(args) < 1:
+		CmdHelp()
+
 	case args[0] == "c" && len(args) == 4:
 		CmdCompress(args[1], args[2], args[3])
 

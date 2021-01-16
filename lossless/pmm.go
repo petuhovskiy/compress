@@ -9,5 +9,3 @@ func (PMM) Encode(bytes []byte) []byte {
 func (PMM) Decode(bytes []byte) ([]byte, error) {
 	panic("implement me")
 }
-
-

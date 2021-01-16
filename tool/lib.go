@@ -11,10 +11,20 @@ type Algo struct {
 }
 
 var algos = []*Algo{
+	//{
+	//	ID:         "pmm",
+	//	HeaderByte: 0x12,
+	//	Backend:    lossless.PMM{},
+	//},
 	{
-		ID:         "pmm",
-		HeaderByte: 0x12,
-		Backend:    lossless.PMM{},
+		ID:         "mock",
+		HeaderByte: 0x13,
+		Backend:    lossless.Mock{},
+	},
+	{
+		ID:         "artm",
+		HeaderByte: 0x14,
+		Backend:    lossless.Arithmetic{},
 	},
 }
 
