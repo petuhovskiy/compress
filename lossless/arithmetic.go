@@ -2,7 +2,6 @@ package lossless
 
 import (
 	"encoding/binary"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/petuhovskiy/compress/lossless/distr"
 	"math/big"
 )
@@ -114,7 +113,7 @@ func (Arithmetic) Encode(bytes []byte) []byte {
 	for i := l.BitLen()-1; i >= 0; i-- {
 		if r.Bit(i) != l.Bit(i) {
 			//spew.Dump("BIT", i, r.Bit(i), l.Bit(i))
-			//trailingBits = i
+			trailingBits = i
 			break
 		}
 	}
@@ -129,7 +128,7 @@ func (Arithmetic) Encode(bytes []byte) []byte {
 	//trailingBits := mid.TrailingZeroBits()
 	mid.Rsh(mid, uint(trailingBits))
 
-	spew.Dump(mid)
+	//spew.Dump(mid)
 
 	//mid.Lsh(mid, uint(trailingBits))
 	//spew.Dump("after", mid)
@@ -214,7 +213,7 @@ func (Arithmetic) Decode(bytes []byte) ([]byte, error) {
 		nl := (&big.Int{}).Lsh(node.bigL, uint(i*m))
 		num = num.Sub(num, nl)
 		//num = num.Mul(num, bigN)
-		num = num.Div(num, node.bigR)
+		num = num.Div(num, nl.Sub(node.bigR, node.bigL))
 
 		result = append(result, b)
 

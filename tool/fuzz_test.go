@@ -30,8 +30,8 @@ func TestAllSamples(t *testing.T) {
 func TestAllFuzz(t *testing.T) {
 	rnd := rand.New(rand.NewSource(123))
 
-	for i := 0; i < 1; i++ {
-		sz := rnd.Intn( 4)
+	for i := 0; i < 1024; i++ {
+		sz := rnd.Intn( 1024)
 		data := make([]byte, sz, sz)
 		_, _= rnd.Read(data)
 
