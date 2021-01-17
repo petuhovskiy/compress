@@ -65,9 +65,7 @@ func (Arithmetic) Encode(bytes []byte) []byte {
 	fullFreq := distr.Frequency(bytes)
 	freq := distr.Normalize65k(fullFreq)
 
-	const n = 65536
 	const m = 16
-	bigN := big.NewInt(n)
 
 	encodeTable, err := buildEncodeTable(freq)
 	if err != nil {
@@ -75,76 +73,34 @@ func (Arithmetic) Encode(bytes []byte) []byte {
 	}
 
 	l := big.NewInt(0)
-	r := big.NewInt(1)
-	base := big.NewInt(1)
+	diff := big.NewInt(1)
+
+	tmp := &big.Int{}
 
 	for _, b := range bytes {
 		lib := encodeTable[b]
 
-		diff := (&big.Int{}).Sub(r, l)
+		l.Lsh(l, m)
 
-		tmp := &big.Int{}
-		base = base.Mul(base, bigN)
-
-		l = l.Mul(l, bigN)
-		nl := (&big.Int{}).Add(l, tmp.Mul(diff, lib.bigL))
-		nr := (&big.Int{}).Add(l, tmp.Mul(diff, lib.bigR))
-
-		l = nl
-		r = nr
-
-		//spew.Dump("lr", l, r)
+		l.Add(l, tmp.Mul(diff, lib.bigL))
+		diff.Mul(diff, tmp.Sub(lib.bigR, lib.bigL))
 	}
 
-	enc := distr.EncodeFreq256(fullFreq)
-	//enc = append(enc, bytes...)
-
-	//spew.Dump(l)
-	//spew.Dump(r)
-	//
-	//spew.Dump(l.BitLen())
-	//spew.Dump(r.BitLen())
-	//
-	//spew.Dump((&big.Int{}).Sub(r, l))
-	//spew.Dump((&big.Int{}).Sub(r, l).BitLen())
-
+	r := diff.Add(diff, l)
 	mid := r.Sub(r, big.NewInt(1))
 	trailingBits := 0
-	for i := l.BitLen()-1; i >= 0; i-- {
+	for i := l.BitLen() - 1; i >= 0; i-- {
 		if r.Bit(i) != l.Bit(i) {
-			//spew.Dump("BIT", i, r.Bit(i), l.Bit(i))
 			trailingBits = i
 			break
 		}
 	}
 
-	//spew.Dump(l.BitLen())
-	//spew.Dump(r.BitLen())
-	//spew.Dump(base.BitLen())
-	//
-	//spew.Dump(l.TrailingZeroBits())
-	//spew.Dump(r.TrailingZeroBits())
-
-	//trailingBits := mid.TrailingZeroBits()
 	mid.Rsh(mid, uint(trailingBits))
 
-	//spew.Dump(mid)
-
-	//mid.Lsh(mid, uint(trailingBits))
-	//spew.Dump("after", mid)
-	//mid.Rsh(mid, uint(trailingBits))
-
-	// TODO: ?
+	enc := distr.EncodeFreq256(fullFreq)
 	enc = append(enc, uvarint(uint64(trailingBits))...)
 	enc = append(enc, mid.Bytes()...)
-
-	//spew.Dump(l.Bits())
-	//spew.Dump(r.Bits())
-	//
-	//spew.Dump(l.String())
-	//spew.Dump(r.String())
-	//
-	//spew.Dump(base.Bits())
 
 	return enc
 }
@@ -177,44 +133,32 @@ func (Arithmetic) Decode(bytes []byte) ([]byte, error) {
 	trailingBits, count := binary.Uvarint(bytes)
 	bytes = bytes[count:]
 
-	//if len(bytes) != sum {
-	//	return nil, distr.ErrInvalidFrequency
-	//}
-
 	num := (&big.Int{}).SetBytes(bytes)
 
 	num.Lsh(num, uint(trailingBits))
 
-	//spew.Dump(num)
-
-	const n = 65536
 	const m = 16
-	//bigN := big.NewInt(n)
+
+	tmp := &big.Int{}
 
 	result := []byte{}
 
 	for i := sum - 1; i >= 0; i-- {
-		cur := (&big.Int{}).Rsh(num, uint(i*m))
-		//spew.Dump(cur)
+		rem := tmp.Rsh(num, uint(i*m)).Int64()
 
-		abc := cur.Int64()
-		if abc == n {
-			abc--
-		}
-		b := decode[abc]
+		// decoded byte
+		b := decode[rem]
 
+		// info about encode
 		node := encodeTable[b]
 
-		nl := (&big.Int{}).Lsh(node.bigL, uint(i*m))
-		num = num.Sub(num, nl)
-		//num = num.Mul(num, bigN)
-		num = num.Div(num, nl.Sub(node.bigR, node.bigL))
+		tmp.Lsh(node.bigL, uint(i*m))
+		num.Sub(num, tmp)
+
+		tmp.Sub(node.bigR, node.bigL)
+		num.Div(num, tmp)
 
 		result = append(result, b)
-
-		//spew.Dump("num", num)
-
-		//spew.Dump(abc, b)
 	}
 
 	return result, nil
