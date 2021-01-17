@@ -14,7 +14,11 @@ func (f FreqSort) Len() int {
 }
 
 func (f FreqSort) Less(i, j int) bool {
-	return f[i].Count > f[j].Count
+	if f[i].Count != f[j].Count {
+		return f[i].Count > f[j].Count
+	}
+
+	return f[i].Byte < f[j].Byte
 }
 
 func (f FreqSort) Swap(i, j int) {
@@ -31,14 +35,15 @@ func Frequency(bytes []byte) []Freq {
 		freq[b].Count++
 	}
 
-	sort.Sort(FreqSort(freq))
 	return freq
 }
 
-// Normalize65k computes byte frequency distribution, normalized to 65536.
+// Normalize65k computes byte frequency distribution, sorted and normalized to 65536.
 func Normalize65k(freqSlice []Freq) []Freq {
 	var freq []Freq
 	freq = append(freq, freqSlice...)
+
+	sort.Sort(FreqSort(freq))
 
 	sum := 0
 	for _, f := range freq {

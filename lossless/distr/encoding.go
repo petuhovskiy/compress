@@ -9,9 +9,6 @@ func EncodeFreq256(freqs []Freq) []byte {
 	ptr := 0
 
 	for _, f := range freqs {
-		res[ptr] = f.Byte
-		ptr++
-
 		ptr += binary.PutUvarint(res[ptr:], uint64(f.Count))
 	}
 
@@ -24,8 +21,7 @@ func DecodeFreq256(bytes []byte) (freqs []Freq, count int, err error) {
 	ptr := 0
 
 	for i := range freqs {
-		freqs[i].Byte = bytes[ptr]
-		ptr++
+		freqs[i].Byte = byte(i)
 
 		u, cnt := binary.Uvarint(bytes[ptr:])
 		ptr += cnt
@@ -33,14 +29,4 @@ func DecodeFreq256(bytes []byte) (freqs []Freq, count int, err error) {
 	}
 
 	return freqs, ptr, nil
-}
-
-func ValidateFreq256(freqs []Freq) error {
-	for i := 1; i < len(freqs); i++ {
-		if freqs[i].Count > freqs[i-1].Count {
-			return ErrInvalidFrequency
-		}
-	}
-
-	return nil
 }

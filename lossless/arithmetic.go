@@ -155,11 +155,6 @@ func (Arithmetic) Decode(bytes []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	err = distr.ValidateFreq256(fullFreq)
-	if err != nil {
-		return nil, err
-	}
-
 	freq := distr.Normalize65k(fullFreq)
 
 	sum := 0
