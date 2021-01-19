@@ -7,7 +7,7 @@ import (
 )
 
 func testAllAlgos(t *testing.T, src []byte) {
-	for _, algo := range algos {
+	for _, algo := range Supported {
 		data1, err := Compress(src, algo.ID)
 		assert.Nil(t, err)
 

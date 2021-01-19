@@ -12,8 +12,11 @@ file ./compress
 ## Usage
 
 ```bash
+# Get help
+./compress
+
 # Compress using Arithmetic coding 
-./compress c pushkin.txt cmp.bin artm
+./compress c pushkin.txt cmp.bin ppm
 
 # Decompress
 ./compress d cmp.bin orig.txt

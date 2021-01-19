@@ -5,10 +5,18 @@ import (
 	"github.com/petuhovskiy/compress/tool"
 	"io/ioutil"
 	"os"
+	"time"
 )
 
 func CmdHelp() {
-	const help = `Compress is a tool for lossless compression and decompression.
+	algos := ""
+
+	for _, algo := range tool.Supported {
+		algos += "\n"
+		algos += fmt.Sprintf("- %s\t => %s", algo.ID, algo.Description)
+	}
+
+	help := `Compress is a tool for lossless compression and decompression.
 
 Usage:
 	./compress <command> [arguments]
@@ -21,12 +29,11 @@ File compression:
 	Example:
 		./compress c in_file.txt out_file.cmp ppm
 
-	Supported algos:
-		artm
-		mock
-		*ppm
+	Supported algos:` +
 
-File decompression:
+"\n" + algos + "\n\n" +
+
+`File decompression:
 	
 	Usage:
 		./compress d <archive> <out>
@@ -45,10 +52,24 @@ func CmdCompress(in, out, algoID string) {
 		return
 	}
 
+	startedAt := time.Now()
+
 	compressed, err := tool.Compress(src, algoID)
 	if err != nil {
 		fmt.Printf("Failed to compress, err=%v\nRun ./compress help, to get help.", err)
 		return
+	}
+
+	finishedAt := time.Now()
+
+	fmt.Printf("Finished in %v.\n", finishedAt.Sub(startedAt))
+
+	beforeSize := len(src)
+	afterSize := len(compressed)
+
+	if beforeSize > 0 {
+		factor := float64(afterSize) / float64(beforeSize) * 100
+		fmt.Printf("Deflated %.2f%%\n", 100 - factor)
 	}
 
 	err = ioutil.WriteFile(out, compressed, 0644)

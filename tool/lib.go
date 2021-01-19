@@ -5,36 +5,35 @@ import (
 )
 
 type Algo struct {
-	ID         string
-	HeaderByte byte
-	Backend    lossless.Algorithm
+	ID          string
+	HeaderByte  byte
+	Backend     lossless.Algorithm
+	Description string
 }
 
-var algos = []*Algo{
-	//{
-	//	ID:         "pmm",
-	//	HeaderByte: 0x12,
-	//	Backend:    lossless.PMM{},
-	//},
+var Supported = []*Algo{
 	{
-		ID:         "mock",
-		HeaderByte: 0x13,
-		Backend:    lossless.Mock{},
+		ID:          "mock",
+		HeaderByte:  0x13,
+		Backend:     lossless.Mock{},
+		Description: "This algorithm does nothing.",
 	},
 	{
-		ID:         "arithm_static",
-		HeaderByte: 0x14,
-		Backend:    lossless.Arithmetic{},
+		ID:          "arithm_static",
+		HeaderByte:  0x14,
+		Backend:     lossless.Arithmetic{},
+		Description: "Arithmetic algo, which writes header with frequencies, and works very slowly on data >32k bytes.",
 	},
 	{
-		ID:         "arithm_ppm",
-		HeaderByte: 0x15,
-		Backend:    lossless.ArithmeticPPM{},
+		ID:          "ppm",
+		HeaderByte:  0x15,
+		Backend:     lossless.ArithmeticPPM{},
+		Description: "Arithmetic algo, which groups data in blocks and calculates frequencies on the fly. Works a bit slow.",
 	},
 }
 
 func FindAlgoByID(id string) *Algo {
-	for _, algo := range algos {
+	for _, algo := range Supported {
 		if algo.ID == id {
 			return algo
 		}
@@ -44,7 +43,7 @@ func FindAlgoByID(id string) *Algo {
 }
 
 func FindAlgoByHeaderByte(b byte) *Algo {
-	for _, algo := range algos {
+	for _, algo := range Supported {
 		if algo.HeaderByte == b {
 			return algo
 		}
