@@ -13,6 +13,15 @@ type lr struct {
 	bigR *big.Int
 }
 
+func newLR(l, r int) lr {
+	return lr{
+		l:    l,
+		r:    r,
+		bigL: big.NewInt(int64(l)),
+		bigR: big.NewInt(int64(r)),
+	}
+}
+
 // Arithmetic is a plain algorithm, which is slow and ineffective (possibly square complexity).
 // Frequency table is static and encoded in the header.
 type Arithmetic struct{}
@@ -24,12 +33,7 @@ func (Arithmetic) buildEncodeTable(freq []distr.Freq) ([]lr, error) {
 	l := 0
 	for _, f := range freq {
 		r := l + f.Count
-		encodeTable[f.Byte] = lr{
-			l:    l,
-			r:    r,
-			bigL: big.NewInt(int64(l)),
-			bigR: big.NewInt(int64(r)),
-		}
+		encodeTable[f.Byte] = newLR(l, r)
 
 		l = r
 	}

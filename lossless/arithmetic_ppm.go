@@ -25,11 +25,18 @@ func (ArithmeticPPM) encodeBlock(block []byte) []byte {
 
 	for _, b := range block {
 		normFreq := distr.Normalize65k(freq)
-		encodeTable, _ := Arithmetic{}.buildEncodeTable(normFreq)
 
-		lib := encodeTable[b]
-		enc.encode(lib)
+		var node lr
+		z := int64(0)
+		for _, f := range normFreq {
+			if f.Byte == b {
+				node = newLR(int(z), int(z)+f.Count)
+				break
+			}
+			z += int64(f.Count)
+		}
 
+		enc.encode(node)
 		freq[b].Count++
 	}
 
@@ -51,16 +58,25 @@ func (ArithmeticPPM) decodeBlock(encoded []byte) ([]byte, error) {
 		rem := decoder.decodeRemainder()
 
 		normFreq := distr.Normalize65k(freq)
-		decodeTable, _ := Arithmetic{}.buildDecodeTable(normFreq)
-		encodeTable, _ := Arithmetic{}.buildEncodeTable(normFreq)
 
-		// decoded byte
-		b := decodeTable[rem]
+		var (
+			b byte // decoded byte
+			node lr
+		)
+
+		z := int64(0)
+		for _, f := range normFreq {
+			if rem >= z && rem < z+int64(f.Count) {
+				b = f.Byte
+				node = newLR(int(z), int(z)+f.Count)
+				break
+			}
+			z += int64(f.Count)
+		}
+
 		result = append(result, b)
 		freq[b].Count++
 
-		// info about encode
-		node := encodeTable[b]
 		decoder.next(node)
 	}
 
@@ -68,7 +84,7 @@ func (ArithmeticPPM) decodeBlock(encoded []byte) ([]byte, error) {
 }
 
 func (ArithmeticPPM) Encode(bytes []byte) []byte {
-	const blockSize = 16 * 1024
+	const blockSize = 8 * 1024
 
 	res := []byte{}
 
