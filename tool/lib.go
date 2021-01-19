@@ -22,9 +22,14 @@ var algos = []*Algo{
 		Backend:    lossless.Mock{},
 	},
 	{
-		ID:         "artm",
+		ID:         "arithm_static",
 		HeaderByte: 0x14,
 		Backend:    lossless.Arithmetic{},
+	},
+	{
+		ID:         "arithm_ppm",
+		HeaderByte: 0x15,
+		Backend:    lossless.ArithmeticPPM{},
 	},
 }
 
