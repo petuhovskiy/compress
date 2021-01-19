@@ -44,6 +44,13 @@ func Normalize65k(freqSlice []Freq) []Freq {
 	freq = append(freq, freqSlice...)
 
 	sort.Sort(FreqSort(freq))
+	Normalize65kInPlace(freq)
+
+	return freq
+}
+
+func Normalize65kInPlace(freq []Freq) {
+	sort.Sort(FreqSort(freq))
 
 	sum := 0
 	for _, f := range freq {
@@ -72,6 +79,4 @@ func Normalize65k(freqSlice []Freq) []Freq {
 	}
 
 	freq[0].Count += n
-
-	return freq
 }

@@ -2,25 +2,7 @@ package lossless
 
 import (
 	"github.com/petuhovskiy/compress/lossless/distr"
-	"math/big"
 )
-
-type lr struct {
-	l int // [
-	r int // )
-
-	bigL *big.Int
-	bigR *big.Int
-}
-
-func newLR(l, r int) lr {
-	return lr{
-		l:    l,
-		r:    r,
-		bigL: big.NewInt(int64(l)),
-		bigR: big.NewInt(int64(r)),
-	}
-}
 
 // Arithmetic is a plain algorithm, which is slow and ineffective (possibly square complexity).
 // Frequency table is static and encoded in the header.

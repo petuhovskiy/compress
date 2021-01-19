@@ -31,7 +31,7 @@ func TestAllFuzz(t *testing.T) {
 	rnd := rand.New(rand.NewSource(123))
 
 	for i := 0; i < 16; i++ {
-		sz := rnd.Intn( 1024)
+		sz := rnd.Intn( 25 * 1024)
 		data := make([]byte, sz, sz)
 		_, _= rnd.Read(data)
 

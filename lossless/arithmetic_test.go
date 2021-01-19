@@ -56,7 +56,7 @@ func BenchmarkArithmetic_Full(b *testing.B) {
 }
 
 func BenchmarkArithmeticPPM_Full(b *testing.B) {
-	const size = 1024 * 1024
+	const size = 64 * 1024
 
 	b.SetBytes(size)
 	b.ReportAllocs()
@@ -65,7 +65,8 @@ func BenchmarkArithmeticPPM_Full(b *testing.B) {
 		bytes := buildBytes(size)
 		encoded := ArithmeticPPM{}.Encode(bytes)
 
-		_, err := ArithmeticPPM{}.Decode(encoded)
+		decoded, err := ArithmeticPPM{}.Decode(encoded)
 		assert.Nil(b, err)
+		assert.Equal(b, bytes, decoded)
 	}
 }

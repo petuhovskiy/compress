@@ -19,12 +19,14 @@ func (ArithmeticPPM) allBytes() []byte {
 
 func (ArithmeticPPM) encodeBlock(block []byte) []byte {
 	freq := distr.Frequency(ArithmeticPPM{}.allBytes())
+	normFreq := make([]distr.Freq, len(freq), len(freq))
 
 	encoded := uvarint(uint64(len(block)))
 	enc := newArithmeticEncoder()
 
 	for _, b := range block {
-		normFreq := distr.Normalize65k(freq)
+		copy(normFreq, freq)
+		distr.Normalize65kInPlace(normFreq)
 
 		var node lr
 		z := int64(0)
@@ -46,6 +48,7 @@ func (ArithmeticPPM) encodeBlock(block []byte) []byte {
 
 func (ArithmeticPPM) decodeBlock(encoded []byte) ([]byte, error) {
 	freq := distr.Frequency(ArithmeticPPM{}.allBytes())
+	normFreq := make([]distr.Freq, len(freq), len(freq))
 
 	u, offset := binary.Uvarint(encoded)
 	encoded = encoded[offset:]
@@ -57,10 +60,11 @@ func (ArithmeticPPM) decodeBlock(encoded []byte) ([]byte, error) {
 	for i := 0; i < bytesCount; i++ {
 		rem := decoder.decodeRemainder()
 
-		normFreq := distr.Normalize65k(freq)
+		copy(normFreq, freq)
+		distr.Normalize65kInPlace(normFreq)
 
 		var (
-			b byte // decoded byte
+			b    byte // decoded byte
 			node lr
 		)
 
