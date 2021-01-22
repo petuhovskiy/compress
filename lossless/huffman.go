@@ -9,13 +9,27 @@ import (
 type Huffman struct{}
 
 func (Huffman) Encode(bytes []byte) []byte {
-	hf := &huffmanCoder{}
-	hf.rebuildTable()
+	var ppm [256]*huffmanCoder
+	for i := range ppm {
+		ppm[i] = &huffmanCoder{}
+		ppm[i].rebuildTable()
+	}
+
+	prev := 0
 
 	w := &bits.Writer{}
-	for _, b := range bytes {
-		hf.encode(int(b), w)
+	for _, elem := range bytes {
+		hf := ppm[prev]
+
+		b := int(elem)
+		hf.encode(b, w)
+
+		hf.freq[b]++
+		hf.rebuildTable()
+
+		prev = b
 	}
+	w.Close()
 
 	res := uvarint(uint64(len(bytes)))
 	res = append(res, w.Data...)
@@ -30,18 +44,32 @@ func (Huffman) Decode(bytes []byte) (res []byte, err error) {
 		}
 	}()
 
+	var ppm [256]*huffmanCoder
+	for i := range ppm {
+		ppm[i] = &huffmanCoder{}
+		ppm[i].rebuildTable()
+	}
+
 	u, n := binary.Uvarint(bytes)
 	bytesCount := int(u)
 	bytes = bytes[n:]
 
 	r := &bits.Reader{Data: bytes}
 
-	hf := &huffmanCoder{}
-	hf.rebuildTable()
+	prev := 0
 
 	res = []byte{}
 	for i := 0; i < bytesCount; i++ {
-		res = append(res, byte(hf.decode(r)))
+		hf := ppm[prev]
+
+		b := hf.decode(r)
+
+		hf.freq[b]++
+		hf.rebuildTable()
+
+		res = append(res, byte(b))
+
+		prev = b
 	}
 
 	return res, nil
