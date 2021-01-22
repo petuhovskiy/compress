@@ -16,6 +16,8 @@ func CmdHelp() {
 		algos += fmt.Sprintf("- %s\t => %s", algo.ID, algo.Description)
 	}
 
+	algos += "\n" + fmt.Sprintf("- best\t => Encode with every supported algorithm and choose best encoding. Very very slow.")
+
 	help := `Compress is a tool for lossless compression and decompression.
 
 Usage:
@@ -30,10 +32,8 @@ File compression:
 		./compress c in_file.txt out_file.cmp ppm
 
 	Supported algos:` +
-
-"\n" + algos + "\n\n" +
-
-`File decompression:
+		"\n" + algos + "\n\n" +
+		`File decompression:
 	
 	Usage:
 		./compress d <archive> <out>
@@ -54,7 +54,14 @@ func CmdCompress(in, out, algoID string) {
 
 	startedAt := time.Now()
 
-	compressed, err := tool.Compress(src, algoID)
+	var compressed []byte
+
+	if algoID == "best" {
+		compressed, err = tool.CompressBest(src)
+	} else {
+		compressed, err = tool.Compress(src, algoID)
+	}
+
 	if err != nil {
 		fmt.Printf("Failed to compress, err=%v\nRun ./compress help, to get help.", err)
 		return
@@ -69,7 +76,7 @@ func CmdCompress(in, out, algoID string) {
 
 	if beforeSize > 0 {
 		factor := float64(afterSize) / float64(beforeSize) * 100
-		fmt.Printf("Deflated %.2f%%\n", 100 - factor)
+		fmt.Printf("Deflated %.2f%%\n", 100-factor)
 	}
 
 	err = ioutil.WriteFile(out, compressed, 0644)

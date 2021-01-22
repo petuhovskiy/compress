@@ -18,6 +18,9 @@ file ./compress
 # Compress using Arithmetic coding 
 ./compress c pushkin.txt cmp.bin ppm
 
+# Compress using best of all (best result, very slow)
+./compress c pushkin.txt cmp.bin best
+
 # Decompress
 ./compress d cmp.bin orig.txt
 ```
